@@ -1,0 +1,14 @@
+# macOS metadata
+.DS_Store
+._*
+
+# Editor temporary files
+*.swp
+*.swo
+*~
+
+# Local environment files
+.env
+.env.*
+!.env.example
+!.env.sample
