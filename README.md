@@ -1,2 +1,2 @@
-# agent-toolkit
-Personal toolkit for reusable AI agent skills, workflows, templates, schemas, and references.
+# agent-skill
+Personal collection of reusable, composable, and portable AI agent skills.
