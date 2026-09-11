@@ -1,8 +1,7 @@
 # Verification Contract
 
-Verification determines whether the implementation satisfies the Spec.
-
-Plan completion alone is not proof of correctness.
+Verification determines whether the implementation satisfies the current Spec.
+Plan completion alone is not evidence of correctness.
 
 ## Frontmatter
 
@@ -18,101 +17,43 @@ status: in_progress
 ---
 ```
 
-Allowed `status` values:
+Allowed `status`: `in_progress`, `complete`. Omit `plan` when no Plan exists.
 
-- in_progress
-- complete
+## Acceptance results
 
----
-
-## Required Sections
-
-# Verification: <Title>
-
-## Acceptance Criteria
-
-Verify every Acceptance Criterion from the Spec.
-
-Recommended format:
+Evaluate every current `AC-*` exactly once:
 
 | ID | Result | Evidence | Notes |
 |---|---|---|---|
-| AC-01 | PASS | integration test | |
-| AC-02 | PASS | streaming API request | |
-| AC-03 | FAIL | regression test | existing test failure |
+| AC-01 | PASS | `<command>`: observed result | |
 
-Allowed result values:
+Allowed results:
 
-- PASS
-- FAIL
-- BLOCKED
+- `PASS` — fresh evidence demonstrates the criterion.
+- `FAIL` — observed behavior contradicts the criterion.
+- `BLOCKED` — an external dependency prevents the check.
 
-`PASS` requires evidence.
+Evidence names what was run or inspected, the observed result, and the relevant
+target. Record only checks actually performed. Retained logs or screenshots may
+support the record but are not required when the observation is concise and
+reproducible.
 
-`FAIL` must describe the observed deviation.
-
-`BLOCKED` must identify the blocker.
-
----
-
-## Validation Evidence
-
-Record only validation actually performed.
-
-Examples:
-
-### Build
-
-```text
-Command: npm run build
-Result: PASS
-```
-
-### Tests
-
-```text
-Command: npm test
-Result: 42 passed, 0 failed
-```
-
-### Manual
-
-```text
-Check: streaming response delivers incremental chunks
-Result: PASS
-```
-
-Never claim validation that was not actually performed.
-
----
+When a Plan exists, reconcile incomplete or changed `P-*` Steps before issuing a
+final decision. Do not duplicate Step evidence that adds nothing to the
+Acceptance Criterion result.
 
 ## Deviations
 
-Include only when implementation differs from the Spec.
+For each material mismatch, record expected behavior, observed behavior, impact,
+and the earliest corrective stage:
 
-Recommended format:
+- `FIX_REQUIRED` — implementation is wrong; Spec and Plan remain valid.
+- `REPLAN_REQUIRED` — Spec remains valid; implementation strategy must change.
+- `SPEC_REVISION_REQUIRED` — the intended contract must change.
 
-```markdown
-### D-01
+## Final decision
 
-Expected:
-...
-
-Observed:
-...
-
-Impact:
-...
-
-Action:
-FIX | REPLAN | SPEC_REVISION
-```
-
----
-
-## Final Decision
-
-Exactly one final decision is required when `status: complete`. While assessment is still in progress, omit the Final Decision section:
+When assessment is complete, set `status: complete` and record exactly one:
 
 ```text
 DONE
@@ -121,42 +62,11 @@ REPLAN_REQUIRED
 SPEC_REVISION_REQUIRED
 ```
 
-### DONE
+Use `DONE` only when every applicable Acceptance Criterion passes with current
+evidence and no material blocker remains. Otherwise choose the earliest stage
+that must change. Keep Verification `in_progress` when an external blocker is
+the only reason assessment cannot finish.
 
-Use only when all required Acceptance Criteria pass.
-
-Transition:
-
-VERIFYING → DONE
-
-### FIX_REQUIRED
-
-Use when implementation is incorrect but the Spec and Plan remain valid.
-
-Transition:
-
-VERIFYING → EXECUTING
-
-### REPLAN_REQUIRED
-
-Use when the Spec remains valid but the implementation strategy is no longer appropriate.
-
-Transition:
-
-VERIFYING → PLAN_DRAFT
-
-### SPEC_REVISION_REQUIRED
-
-Use when the intended scope, requirements, constraints, or Acceptance Criteria must change.
-
-Transition:
-
-VERIFYING → SPEC_DRAFT
-
-## Evidence and Blocked Assessments
-
-All shown frontmatter fields are required for the full workflow. Evidence must identify the actual command or inspection, observed result, and relevant target or artifact; a test name alone is not proof. Link retained logs/screenshots when available. Include every current AC once. During an unfinished pass, unverified rows use BLOCKED with a concrete explanation such as `not yet run`; this alone does not make the workflow BLOCKED if the agent can continue.
-
-If a required check cannot run due to an external dependency, keep Verification in_progress, omit Final Decision, and set workflow BLOCKED with blocked_from VERIFYING. Do not reinterpret missing access as a failed implementation. If other findings already establish required fixes or revision, a complete assessment may issue that non-DONE decision while retaining blocked rows and limitations. DONE requires all ACs PASS with current evidence and no unresolved blockers.
-
-If multiple deviations exist, select the earliest stage that must be revisited: SPEC_REVISION_REQUIRED before REPLAN_REQUIRED before FIX_REQUIRED. Never weaken ACs merely to obtain PASS.
+After any implementation, Plan, or Spec change, rerun the checks whose evidence
+may no longer be valid. Historical evidence may remain labeled as history; it
+cannot prove the changed result.

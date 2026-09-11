@@ -1,103 +1,45 @@
 # Task Classification
 
-Classify the task before choosing the workflow.
+Classify by uncertainty and consequence. File count alone is not complexity.
 
 ## Trivial
 
-Use when the requested change is mechanical, local, and has negligible design uncertainty.
-
-Examples:
-
-- rename a file
-- fix formatting
-- change static copy
-- update a known constant
-
-Workflow:
-
-Execute → Verify
-
----
+Use `execute → verify` for a mechanical, local change with negligible design
+uncertainty, such as formatting, static copy, a rename, or a known constant.
 
 ## Simple
 
-Use when implementation requires inspecting existing behavior but does not require material product or architectural decisions.
+Use `inspect → execute → verify` when the desired behavior is clear after local
+inspection and implementation requires no material product, architecture,
+security, compatibility, or data decision. Examples include a localized bug
+fix, known configuration change, or established UI adjustment.
 
-Examples:
-
-- fix a localized bug
-- resolve a compiler warning
-- adjust an existing UI behavior
-- modify a known configuration
-
-Workflow:
-
-Inspect → Execute → Verify
-
----
+Trivial and simple work need no persisted Spec or Plan by default.
 
 ## Complex
 
-Use when correctness depends on explicitly defining requirements before implementation.
+Use `spec → plan → execute → verify` when correctness depends on making the
+contract explicit before implementation. Typical signals are:
 
-Typical signals include:
-
-- multiple modules or files
-- new user-visible behavior
-- new API or API behavior change
-- data model change
-- architecture change
-- security-sensitive behavior
-- migration or compatibility concern
-- multiple acceptance conditions
-
-Workflow:
-
-Spec → Plan → Execute → Verify
-
----
+- new or changed user-visible behavior;
+- public API, data-model, architecture, migration, or security impact;
+- several interacting requirements or acceptance conditions;
+- a meaningful risk of implementing the wrong outcome.
 
 ## Exploratory
 
-Use when important unknowns must be resolved before requirements can be reliably defined.
+Use `research → spec → plan → execute → verify` only when a bounded technical,
+product, architectural, or external-feasibility decision prevents a reliable
+Spec. Research ends when that decision can be made or a concrete external
+blocker is established.
 
-Typical signals include:
+## Reclassify when needed
 
-- architecture selection
-- external API feasibility
-- library or framework selection
-- unclear product behavior
-- technical feasibility investigation
-- competing solution approaches
+Escalate the route when new information changes the contract or exposes a
+decision that must be resolved first. A larger-than-expected implementation is
+not enough by itself: update the Plan unless the outcome or acceptance contract
+also changed.
 
-Workflow:
-
-Research → Spec → Plan → Execute → Verify
-
----
-
-## Escalation Rule
-
-Always choose the lightest workflow that preserves correctness.
-
-Escalate when newly discovered complexity materially affects:
-
-- scope
-- architecture
-- public API
-- data model
-- security
-- user-visible behavior
-- acceptance criteria
-
-Examples:
-
-Simple → Complex
-
-when a local bug fix requires changing public API behavior.
-
-Complex → Exploratory
-
-when implementation depends on unresolved technical feasibility.
-
-Do not downgrade merely to avoid producing a Spec or Plan.
+If the task becomes trivial or simple after inspection, continue without manufacturing
+Spec or Plan artifacts. Preserve artifacts already requested by the user or
+needed for auditability.

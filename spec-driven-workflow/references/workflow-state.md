@@ -1,160 +1,96 @@
 # Workflow State
 
-Workflow state is the canonical source of task progress.
+Use persisted state when work must survive a handoff, interruption, or audit.
+For short continuous work, conversation context and normal task tracking are
+sufficient.
 
 ## Schema
 
 ```yaml
 workflow:
+  version: 2
   id: TASK-001
   title: "<task title>"
   classification: complex
-  state: SPEC_READY
-
+  state: PLAN_READY
   artifacts:
-    spec: SPEC-001
-    plan: null
-    verification: null
     research: null
-
+    spec: SPEC-001
+    plan: PLAN-001
+    verification: null
+  execution:
+    current_step: P-01
+    completed_steps: []
+    step_evidence: {}
   blockers: []
-
-  next_action: create implementation plan
+  next_action: execute P-01
 ```
 
-Omit artifact fields that do not apply when practical.
+Required keys are `version`, `id`, `title`, `classification`, `state`,
+`artifacts`, `blockers`, and `next_action`. Add `execution` when a Plan exists.
 
----
+Allowed classifications: `trivial`, `simple`, `complex`, `exploratory`.
 
-## Classification Values
+Allowed states:
 
-Allowed values:
+```text
+INTAKE  RESEARCHING  SPEC_DRAFT  SPEC_READY  PLAN_DRAFT  PLAN_READY
+EXECUTING  VERIFYING  BLOCKED  DONE
+```
 
-- trivial
-- simple
-- complex
-- exploratory
+Do not copy requirements or Step actions into state. Resolve them from the Spec
+and Plan.
 
----
+## Transitions
 
-## State Values
+Use only the stages required by the selected route:
 
-Allowed values:
+```text
+trivial/simple: INTAKE → EXECUTING → VERIFYING → DONE
+complex:        INTAKE → SPEC_DRAFT → SPEC_READY → PLAN_DRAFT → PLAN_READY
+                → EXECUTING → VERIFYING → DONE
+exploratory:    INTAKE → RESEARCHING → SPEC_DRAFT → ... → DONE
+```
 
-- INTAKE
-- RESEARCHING
-- SPEC_DRAFT
-- SPEC_READY
-- PLAN_DRAFT
-- PLAN_READY
-- EXECUTING
-- VERIFYING
-- BLOCKED
-- DONE
+Return to `EXECUTING` for an implementation fix, `PLAN_DRAFT` for a strategy
+change, and `SPEC_DRAFT` for a contract change. Invalidate only the downstream
+Steps and evidence affected by the change.
 
-Do not invent additional state names.
+## Execution progress
 
----
+`current_step` is the next or active `P-*` Step. Add a Step to
+`completed_steps` only after its `Done when` condition passes, and record enough
+evidence in `step_evidence` to resume or audit the work. Independent Steps may
+run in parallel when their dependencies, targets, and side effects do not
+conflict.
 
-## State Transitions
-
-Normal complex workflow:
-
-INTAKE
-→ SPEC_DRAFT
-→ SPEC_READY
-→ PLAN_DRAFT
-→ PLAN_READY
-→ EXECUTING
-→ VERIFYING
-→ DONE
-
-Exploratory workflow:
-
-INTAKE
-→ RESEARCHING
-→ SPEC_DRAFT
-→ SPEC_READY
-→ PLAN_DRAFT
-→ PLAN_READY
-→ EXECUTING
-→ VERIFYING
-→ DONE
-
----
-
-## Return Transitions
-
-Implementation defect:
-
-VERIFYING
-→ EXECUTING
-
-Implementation strategy invalid:
-
-EXECUTING or VERIFYING
-→ PLAN_DRAFT
-
-Requirement or scope change:
-
-PLAN_DRAFT, EXECUTING, or VERIFYING
-→ SPEC_DRAFT
-
----
+Set `current_step: null` when no Step is active. Move to `VERIFYING` when every
+required Step is complete.
 
 ## Blocking
 
-Use `BLOCKED` only when progress cannot continue without external information, access, dependency, or material decision.
-
-When blocked, record:
+Use `BLOCKED` only when no useful in-scope work can continue without external
+information, access, dependency, or a material decision. Record:
 
 ```yaml
 state: BLOCKED
-blocked_from: PLAN_DRAFT
-
+blocked_from: EXECUTING
 blockers:
   - "<specific blocker>"
-
-next_action: "<action required to unblock>"
+next_action: "<external action needed to resume>"
 ```
 
-After resolution, return to `blocked_from` or the appropriate resulting state.
+Retain the active Step when blocked during execution. After resolution, clear
+the blocker and return to the appropriate stage. A failed check is not a blocker
+when it can be fixed or re-planned within the existing authorization.
 
----
+## Persistence
 
-## Status Reporting
+Store `workflow-state.yaml` with its referenced `research.md`, `spec.md`,
+`plan.md`, and `verification.md` files. Uncreated or inapplicable artifacts may
+be `null`. Update an artifact before updating state to reference its new status,
+and ensure every non-null ID resolves to a file with the matching ID.
 
-When asked to check status, report:
-
-Task
-State
-Completed artifacts
-Current blocker, if any
-Next action
-
-Example:
-
-Task: TASK-001  
-State: PLAN_READY
-
-Spec: SPEC-001 ready  
-Plan: PLAN-001 ready  
-Verification: not started
-
-Blockers: none
-
-Next: execute P-01
-
-## Persistence and Consistency
-
-For persisted tasks save `workflow-state.yaml` and `spec.md`, `plan.md`, `verification.md`, and optional `research.md` in one task directory. Artifact IDs resolve to those filenames within that directory; IDs are scoped to the task. Choose a non-colliding task directory and ID. `version: 1` denotes the schema version, not the artifact revision.
-
-Required workflow keys: `id`, `title`, `classification`, `state`, `artifacts`, `blockers`, `next_action`. Uncreated artifacts may be null; omitted artifacts must be inapplicable. `blocked_from` is required only in BLOCKED. Clear it and resolved blockers on resumption. In DONE, use `next_action: null`.
-
-Workflow state is the sole progress source. Artifact `status` only expresses document readiness or assessment completion; a complete Verification may request fixes, and complete Research may report a blocker. Update artifacts first, then state at each transition and before handoff.
-
-Trivial/simple: INTAKE → EXECUTING → VERIFYING → DONE; inspection occurs in INTAKE. Verify directly against the requested outcome with concrete evidence. The full Spec/Plan/Verification contracts apply to complex/exploratory tasks.
-
-Any active stage can enter BLOCKED. Newly discovered prerequisite uncertainty can return active work to RESEARCHING. Material Spec changes from any later stage return to SPEC_DRAFT; strategy changes from PLAN_READY, EXECUTING, or VERIFYING return to PLAN_DRAFT. Reopened DONE work must reassess the appropriate stage.
-
-On Spec changes, mark the Spec and existing Plan draft and invalidate current Verification by setting it in_progress and removing its final decision. On Plan changes, mark Plan draft and invalidate Verification. After implementation fixes, invalidate affected evidence and rerun affected checks before claiming DONE. Preserve unchanged item IDs; do not recycle retired IDs for unrelated requirements. Old evidence remains historical and cannot prove changed behavior.
+Workflow state is the source of truth for status reports. Preserve stable IDs
+across revisions and remove completion/evidence entries invalidated by changed
+meaning. Use `next_action: null` only for `DONE`.

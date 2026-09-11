@@ -1,10 +1,7 @@
 # Research Contract
 
-Research is optional.
-
-Use Research only when uncertainty prevents creation of a reliable Spec.
-
-Research exists to resolve decisions, not to accumulate information.
+Research resolves a bounded decision that prevents a reliable Spec. It is not a
+general background report.
 
 ## Frontmatter
 
@@ -18,72 +15,35 @@ status: in_progress
 ---
 ```
 
-Allowed `status` values:
+Allowed `status`: `in_progress`, `complete`.
 
-- in_progress
-- complete
+## Required content
 
----
+### Question
 
-## Required Sections
+State the decision that must be made and the criteria that matter.
 
-# Research: <Title>
+### Findings
 
-## Question
+Record decision-relevant findings. Identify the source, code location, command,
+experiment, or other evidence for consequential claims; label assumptions.
 
-State the specific uncertainty that must be resolved.
+### Decision
 
-## Findings
+State the selected option and rationale, or the concrete external blocker that
+prevents a decision.
 
-Record only findings relevant to the decision.
+### Spec impact
 
-## Decision
+State the requirements, constraints, or acceptance criteria the Spec must add
+or change. Reference existing IDs when a Spec already exists.
 
-State the selected conclusion or identify why no conclusion can yet be made.
+Add options, detailed evidence, or remaining unknowns only when they materially
+support the decision.
 
-## Spec Impact
+## Completion
 
-Describe how the result changes or informs the Spec.
-
-Examples:
-
-- Add constraint C-02.
-- Define FR-03.
-- Resolve streaming architecture.
-- No Spec change required.
-
----
-
-## Conditional Sections
-
-### Options
-
-Use when multiple viable approaches were compared.
-
-Recommended format:
-
-| Option | Advantages | Trade-offs |
-|---|---|---|
-
-### Evidence
-
-Include sources, experiments, benchmarks, or code inspection when they materially support the decision.
-
-### Remaining Unknowns
-
-Include only unresolved unknowns that still matter.
-
----
-
-## Completion Rule
-
-Research may transition to `complete` when it either:
-
-1. resolves the question sufficiently for Spec creation, or
-2. identifies a concrete blocker that prevents further progress.
-
-Research must feed into Spec.
-
-Do not transition directly from Research to Plan.
-
-All shown frontmatter fields are required. Support consequential factual findings with source references or actual observations; distinguish assumptions from evidence. A completed report that identifies a blocker puts the workflow in BLOCKED, not SPEC_READY. Research completion alone never authorizes broader implementation.
+Set `status: complete` when the question is answered well enough to write the
+Spec, or when a concrete blocker is evidenced. Any remaining unknown must be
+immaterial to the contract or named as the blocker. Feed the decision into the
+Spec; Research does not replace it.

@@ -1,17 +1,14 @@
 # Plan Contract
 
-The Plan defines how a ready Spec will be implemented.
-
-A Plan must not redefine requirements.
-
-Input must be a ready Spec.
+The Plan turns a ready Spec into an executable strategy. It does not redefine
+the requested outcome.
 
 ## Frontmatter
 
 ```yaml
 ---
 type: plan
-version: 1
+version: 2
 id: PLAN-001
 task: TASK-001
 spec: SPEC-001
@@ -19,179 +16,80 @@ status: draft
 ---
 ```
 
-Allowed `status` values:
+Allowed `status`: `draft`, `ready`.
 
-- draft
-- ready
+## Required content
 
----
+### Objective and strategy
 
-## Required Sections
+Reference the Spec, summarize the implementation objective, and record the
+decisions that shape the approach. Do not restate the full Spec.
 
-# Implementation Plan: <Title>
+### Impacted areas
 
-## Objective
+Name the files, modules, interfaces, data, configuration, or runtime surfaces
+expected to change. Use a table only when comparison helps.
 
-Reference the Spec and state the implementation objective in one or two sentences.
+### Steps
 
-Do not restate the complete Spec.
-
-## Strategy
-
-Describe the overall implementation approach and major design decisions.
-
-## Impacted Areas
-
-Identify expected areas of change.
-
-Recommended format:
-
-| Area | Impact | Notes |
-|---|---|---|
-| API | Modify | Add relay endpoint |
-| Service | Add | Provider relay service |
-| Persistence | None | No data storage changes |
-
-## Implementation Steps
-
-Every step must have a stable ID.
+Create the fewest meaningful implementation units that make dependencies,
+handoff, or recovery clear. Each Step needs a stable `P-*` ID, an action-oriented
+title, concrete targets and actions, the Spec IDs it covers, and a checkable
+completion condition.
 
 ```markdown
 ### P-01 — <Action-oriented title>
 
-**Targets**
-- `path/or/module`
+**Targets:** <files, modules, interfaces, or runtime surfaces>
 
-**Changes**
-- ...
+**Actions**
+- <concrete operation>
 
-**Covers**
-- FR-01
-- AC-01
+**Covers:** FR-01, AC-01
 
-**Validation**
-- ...
+**Done when:** <observable result and required evidence>
 ```
 
-Each step must represent a meaningful, verifiable implementation unit.
+Add `Depends on`, `Preconditions`, `Outputs`, `Validation`, or `Failure /
+Recovery` only when that information is not already clear from the Step and
+materially affects execution. For structured tooling, use the equivalent keys
+`id`, `title`, `depends_on`, `preconditions`, `targets`, `actions`, `outputs`,
+`covers`, `validation`, `done_when`, and `failure_recovery`.
 
-Avoid vague steps such as:
+Split Steps when parts have different prerequisites, outputs, owners, or
+recovery paths. Combine mechanical edits that succeed or fail together. Step
+validation establishes local progress; final Verification still evaluates the
+acceptance contract.
 
-`P-01 — Implement backend`
+### Validation and traceability
 
-Prefer:
+State the smallest set of build, test, inspection, or runtime checks sufficient
+to evaluate the Acceptance Criteria. Show that every requirement, material
+constraint, and Acceptance Criterion has both an implementation path and a
+verification path. Use a traceability table when the mapping is not obvious.
 
-`P-01 — Add relay service`
+## Optional content
 
-`P-02 — Expose streaming endpoint`
+Add dependencies, risks, migration/compatibility, or rollback only when they
+change execution or recovery decisions.
 
-`P-03 — Add provider error mapping`
+## Ready criterion
 
----
+Set `status: ready` when:
 
-## Validation
+- the referenced Spec is ready;
+- Steps are executable in dependency order and have checkable completion bounds;
+- all referenced IDs resolve and every in-scope Spec item is covered;
+- every Acceptance Criterion has a verification path;
+- no implementation decision remains that could change the Spec.
 
-Define the expected validation mechanisms.
+Readiness is a quality gate, not a separate approval round.
 
-Include only applicable categories:
+## Replanning
 
-### Build
+Revise the Plan when the strategy, targets, Step boundaries, dependencies, or
+verification paths become invalid while the Spec remains correct. Return to the
+Spec when intended behavior or its acceptance contract changes.
 
-- command or build condition
-
-### Automated Tests
-
-- unit tests
-- integration tests
-- existing regression tests
-
-### Manual Verification
-
-- user flow
-- API request
-- runtime behavior
-
----
-
-## Traceability
-
-Every functional and non-functional requirement must be covered.
-
-Every Acceptance Criterion must have a planned verification path.
-
-Recommended format:
-
-| Spec Item | Plan Step | Verification |
-|---|---|---|
-| FR-01 | P-01, P-02 | integration test |
-| FR-02 | P-02 | streaming API test |
-| AC-01 | P-02 | integration test |
-| AC-02 | P-02 | streaming request |
-
----
-
-## Conditional Sections
-
-Include only when relevant.
-
-### Dependencies
-
-Internal or external dependencies and ordering constraints.
-
-### Risks
-
-Only material implementation risks.
-
-Recommended format:
-
-| Risk | Impact | Mitigation |
-|---|---|---|
-
-### Migration / Compatibility
-
-Use when the task affects:
-
-- stored data
-- API compatibility
-- configuration
-- deployment
-- backward compatibility
-
-### Rollback
-
-Use only when rollback requires explicit handling.
-
----
-
-## Plan Readiness Rules
-
-A Plan may transition to `ready` only when:
-
-1. It references a ready Spec.
-2. All in-scope requirements are covered.
-3. Every Acceptance Criterion has a verification path.
-4. Impacted areas are identified.
-5. Implementation order is executable.
-6. Validation is defined.
-7. No Plan step depends on an unresolved Spec decision.
-
----
-
-## Replanning Rule
-
-Return to Plan without changing Spec when:
-
-- implementation approach changes
-- module or file selection changes
-- dependency requires an alternative implementation
-- original implementation strategy proves invalid
-
-Return to Spec instead when:
-
-- scope changes
-- requirement changes
-- material constraint changes
-- acceptance criteria change
-- user-visible intended behavior changes
-
-All shown frontmatter fields are required. Use P-01, P-02, etc. in execution order; record dependencies where order alone is insufficient. Traceability references must resolve to the current Spec and Plan. Minor target or implementation-detail adjustments may be recorded in place; replan when they invalidate strategy, ordering, or verification.
+After a Plan revision, invalidate affected execution and verification evidence.
+Preserve unchanged IDs; retire rather than recycle IDs with changed meaning.
