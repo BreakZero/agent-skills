@@ -1,49 +1,12 @@
-# Research Contract
+# Research record
 
-Research resolves a bounded decision that prevents a reliable Spec. It is not a
-general background report.
+Use this record when a specific unresolved decision blocks a reliable contract. Stop research once the decision can be made with sufficient evidence.
 
-## Frontmatter
+Record:
 
-```yaml
----
-type: research
-version: 1
-id: RESEARCH-001
-task: TASK-001
-status: in_progress
----
-```
+- The decision to make and criteria that matter.
+- Decision-relevant findings with sources, code locations, or observed results. Mark assumptions.
+- The chosen option and why, or the exact external blocker.
+- The effect on requirements, constraints, or acceptance criteria.
 
-Allowed `status`: `in_progress`, `complete`.
-
-## Required content
-
-### Question
-
-State the decision that must be made and the criteria that matter.
-
-### Findings
-
-Record decision-relevant findings. Identify the source, code location, command,
-experiment, or other evidence for consequential claims; label assumptions.
-
-### Decision
-
-State the selected option and rationale, or the concrete external blocker that
-prevents a decision.
-
-### Spec impact
-
-State the requirements, constraints, or acceptance criteria the Spec must add
-or change. Reference existing IDs when a Spec already exists.
-
-Add options, detailed evidence, or remaining unknowns only when they materially
-support the decision.
-
-## Completion
-
-Set `status: complete` when the question is answered well enough to write the
-Spec, or when a concrete blocker is evidenced. Any remaining unknown must be
-immaterial to the contract or named as the blocker. Feed the decision into the
-Spec; Research does not replace it.
+Use the project's artifact format. For an auditable set of linked artifacts, include a stable ID and task ID. Detailed option matrices belong here only when they affect the decision. A research record does not replace the implementation contract.

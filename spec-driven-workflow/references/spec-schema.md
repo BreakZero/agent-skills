@@ -1,80 +1,14 @@
-# Spec Contract
+# Spec contract
 
-The Spec defines the observable outcome. Include implementation details only
-when they are fixed constraints.
+State the bounded outcome in terms that implementation and verification can share. Use the project's format; add stable IDs when multiple artifacts need traceability.
 
-## Frontmatter
+Include:
 
-```yaml
----
-type: spec
-version: 1
-id: SPEC-001
-task: TASK-001
-status: draft
----
-```
+- Goal and in-scope deliverables. Name exclusions only when they resolve likely ambiguity.
+- Observable requirements and material constraints, including compatibility or data limits.
+- Acceptance criteria that can be checked against each requirement and material constraint.
+- Assumptions or open questions only when they could change the outcome.
 
-Allowed `status`: `draft`, `ready`.
+For larger auditable work, IDs such as `FR-01`, `C-01`, and `AC-01` make revisions and coverage explicit. A direct assertion is enough for a simple criterion; Given/When/Then can clarify conditional behavior.
 
-## Required content
-
-### Goal
-
-State the user-visible or system outcome.
-
-### Scope
-
-Define what must be delivered. Add out-of-scope exclusions only when they
-prevent a likely ambiguity.
-
-### Requirements
-
-Give each testable obligation a stable ID:
-
-```text
-FR-01: <subject> must <observable behavior> [when <condition>].
-NFR-01: <subject> must meet <measurable property>.
-```
-
-Use `NFR-*` only for relevant non-functional properties. Record fixed
-implementation or compatibility limits as `C-*` constraints when traceability
-is useful.
-
-### Acceptance criteria
-
-Define the evidence-bearing result for every requirement and material
-constraint:
-
-```text
-AC-01 (FR-01): <objectively verifiable result>.
-AC-02 (NFR-01, C-01): <objectively verifiable result>.
-```
-
-Use Given/When/Then when it improves behavioral clarity. A direct assertion is
-better for a simple check.
-
-## Optional content
-
-Add context, constraints, behavior rules, edge cases, assumptions, or open
-questions only when they change implementation or verification decisions.
-
-## Ready criterion
-
-Set `status: ready` when:
-
-- the goal and scope are bounded;
-- each requirement is testable;
-- every material constraint is captured;
-- every `FR-*`, `NFR-*`, and material `C-*` is covered by at least one `AC-*`;
-- every acceptance criterion references valid IDs and has an objective check;
-- no open question could materially change the contract.
-
-A documented assumption may resolve minor ambiguity when it does not change the
-user-visible outcome or coverage set.
-
-## Revisions
-
-When the contract changes, return the Spec to `draft` and invalidate affected
-Plan and Verification content. Preserve unchanged IDs; retire rather than reuse
-an ID whose meaning changed.
+The contract is ready when scope is bounded, consequential questions are resolved or stated as blockers, and each in-scope obligation has a checkable acceptance path. When intended behavior changes, revise the contract and invalidate affected plan or verification evidence. Preserve IDs whose meanings have not changed.
